@@ -5,7 +5,7 @@ const db = require('../db');  // Import the database connection
 
 // GET /classCodes - get all class codes
 router.get('/', function(req, res, next) {
-    db.any('SELECT courseCode FROM Courses;')
+    db.query('SELECT courseCode FROM Courses;')
       .then(courseCodes => {
         res.json(courseCodes);
       })
