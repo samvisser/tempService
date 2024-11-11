@@ -45,6 +45,7 @@ app.get('/test-db-connection', async (req, res) => {
     database: dbDatabase,
     password: dbPassword,
     port: dbPort,
+    ssl: { rejectUnauthorized: false }
   });
 
   try {
