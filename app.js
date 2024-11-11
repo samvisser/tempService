@@ -7,6 +7,9 @@ var logger = require('morgan');
 // import postsql client
 const { Client } = require('pg');
 
+// import routes
+var codesRouter = require('./routes/courseCodes');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -24,6 +27,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
+// use custom routes
+app.use('/coursecodes', codesRouter);
 
 // Test route for DB connection and environment variables
 app.get('/test-db-connection', async (req, res) => {

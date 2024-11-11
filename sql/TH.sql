@@ -20,7 +20,7 @@ CREATE TABLE Tutors (
     email VARCHAR(255) UNIQUE NOT NULL
 
 );
-😂
+
 -- Create CourseTutor Junction Table for Many-to-Many Relationship
 CREATE TABLE CourseTutor (
     tutorID INT REFERENCES Tutors(tutorID) ON DELETE CASCADE,
