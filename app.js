@@ -26,7 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/coursecodes', codesRouter); // Use custom routes
+//app.use('/coursecodes', codesRouter); // Use custom routes
 
 // Test route for DB connection and environment variables
 app.get('/test-db-connection', async (req, res) => {
@@ -62,15 +62,15 @@ app.get('/test-db-connection', async (req, res) => {
   }
 });
 
-// Middleware to handle courseCodes errors
-app.use('/coursecodes', async (req, res, next) => {
-  try {
-    await codesRouter(req, res, next);
-  } catch (err) {
-    console.error('Error in /coursecodes route:', err.stack);
-    res.status(500).json({ error: 'Failed to retrieve course codes', details: err.message });
-  }
-});
+// // Middleware to handle courseCodes errors
+// app.use('/coursecodes', async (req, res, next) => {
+//   try {
+//     await codesRouter(req, res, next);
+//   } catch (err) {
+//     console.error('Error in /coursecodes route:', err.stack);
+//     res.status(500).json({ error: 'Failed to retrieve course codes', details: err.message });
+//   }
+// });
 
 // Catch-all route for undefined endpoints
 app.use((req, res) => {
