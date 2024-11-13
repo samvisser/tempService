@@ -1,3 +1,4 @@
+// app.js
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -7,8 +8,12 @@ var logger = require('morgan');
 // import PostgreSQL client
 const { Client } = require('pg');
 
+//import for local testing
+require('dotenv').config();
+
 // import routes
 var codesRouter = require('./routes/courseCodes');
+var tutorsRouter = require('./routes/tutors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -26,7 +31,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-//app.use('/coursecodes', codesRouter); // Use custom routes
+
+// Use custom routes
+app.use('/coursecodes', codesRouter);
+app.use('/tutors', tutorsRouter);
 
 // Test route for DB connection and environment variables
 app.get('/test-db-connection', async (req, res) => {
@@ -62,15 +70,15 @@ app.get('/test-db-connection', async (req, res) => {
   }
 });
 
-// // Middleware to handle courseCodes errors
-// app.use('/coursecodes', async (req, res, next) => {
-//   try {
-//     await codesRouter(req, res, next);
-//   } catch (err) {
-//     console.error('Error in /coursecodes route:', err.stack);
-//     res.status(500).json({ error: 'Failed to retrieve course codes', details: err.message });
-//   }
-// });
+// Middleware to handle courseCodes errors
+app.use('/coursecodes', async (req, res, next) => {
+  try {
+    await codesRouter(req, res, next);
+  } catch (err) {
+    console.error('Error in /coursecodes route:', err.stack);
+    res.status(500).json({ error: 'Failed to retrieve course codes', details: err.message });
+  }
+});
 
 // Catch-all route for undefined endpoints
 app.use((req, res) => {

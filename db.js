@@ -1,4 +1,6 @@
 // db.js
+
+require('dotenv').config();
 const pgp = require('pg-promise')();
 
 // Set up the database connection using environment variables
