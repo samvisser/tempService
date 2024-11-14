@@ -24,7 +24,7 @@ router.get('/:courseCode', function (req, res, next) {
      FROM Tutors t
      JOIN CourseTutor ct ON t.tutorID = ct.tutorID
      JOIN Courses c ON ct.courseID = c.courseID
-     WHERE LOWER(c.courseCode) = LOWER($1)`, 
+     WHERE LOWER(c.courseCode) = LOWER($1);`, 
     [courseCode]
   )
     .then(tutors => {
