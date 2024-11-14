@@ -1,94 +1,41 @@
-// app.js
-var createError = require('http-errors');
+// In routes/courseCodes.js
 var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var router = express.Router();
+const db = require('../db');  // Import the database connection
 
-// import PostgreSQL client
-const { Client } = require('pg');
-
-//import for local testing
-require('dotenv').config();
-
-// import routes
-var codesRouter = require('./routes/courseCodes');
-var tutorsRouter = require('./routes/tutors');
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-
-var app = express();
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-// Use custom routes
-app.use('/coursecodes', codesRouter);
-app.use('/tutors', tutorsRouter);
-
-// Test route for DB connection and environment variables
-app.get('/test-db-connection', async (req, res) => {
-  const dbServer = process.env.DB_SERVER;
-  const dbPort = process.env.DB_PORT;
-  const dbUser = process.env.DB_USER;
-  const dbPassword = process.env.DB_PASSWORD;
-  const dbDatabase = process.env.DB_DATABASE;
-
-  // Check if all required environment variables are available
-  if (!dbServer || !dbPort || !dbUser || !dbPassword || !dbDatabase) {
-    return res.status(500).json({ error: 'Missing one or more environment variables' });
-  }
-
-  // Create PostgreSQL client
-  const client = new Client({
-    user: dbUser,
-    host: dbServer,
-    database: dbDatabase,
-    password: dbPassword,
-    port: dbPort,
-    ssl: { rejectUnauthorized: false }
-  });
-
-  try {
-    await client.connect();
-    res.json({ message: 'Successfully connected to the database!' });
-  } catch (err) {
-    console.error('Database connection error:', err.stack);
-    res.status(500).json({ error: 'Failed to connect to the database', details: err.message });
-  } finally {
-    await client.end();
-  }
+// GET /coursecodes - get all course codes
+router.get('/', function (req, res, next) {
+  db.any('SELECT courseCode FROM Courses;')
+    .then(courseCodes => {
+      console.log(courseCodes);
+      res.json(courseCodes);
+    })
+    .catch(err => {
+      res.status(500).json({ error: err.message });
+    });
 });
 
-// Middleware to handle courseCodes errors
-app.use('/coursecodes', async (req, res, next) => {
-  try {
-    await codesRouter(req, res, next);
-  } catch (err) {
-    console.error('Error in /coursecodes route:', err.stack);
-    res.status(500).json({ error: 'Failed to retrieve course codes', details: err.message });
-  }
+// GET /coursecodes/:courseCode - get tutors for a specific course code
+router.get('/:courseCode', function (req, res, next) {
+  const courseCode = req.params.courseCode;
+
+  db.any(
+    `SELECT t.firstName || ' ' || t.lastName AS tutorName
+     FROM Tutors t
+     JOIN CourseTutor ct ON t.tutorID = ct.tutorID
+     JOIN Courses c ON ct.courseID = c.courseID
+     WHERE LOWER(c.courseCode) = LOWER($1)`, 
+    [courseCode]
+  )
+    .then(tutors => {
+      if (tutors.length === 0) {
+        return res.status(404).json({ message: "No tutors found for this course code" });
+      }
+      res.json(tutors);
+    })
+    .catch(err => {
+      res.status(500).json({ error: err.message });
+    });
 });
 
-// Catch-all route for undefined endpoints
-app.use((req, res) => {
-  res.status(404).json({ error: `Cannot GET ${req.originalUrl}` });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err.stack);
-  res.status(err.status || 500).json({ error: err.message });
-});
-
-module.exports = app;
+module.exports = router;
