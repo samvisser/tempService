@@ -15,19 +15,17 @@ router.get('/', function (req, res, next) {
     });
 });
 
-router.get('/coursecodes/:courseCode', function (req, res, next) {
+// GET /coursecodes/:courseCode - get tutors for a specific course code
+router.get('/:courseCode', function (req, res, next) {
   const courseCode = req.params.courseCode;
-
-  // Add a space between letters and numbers (e.g., "CS262" -> "CS 262")
-  const formattedCourseCode = courseCode.replace(/([A-Za-z])(\d+)/, '$1 $2');
 
   db.any(
     `SELECT t.firstName || ' ' || t.lastName AS tutorName
-       FROM Tutors t
-       JOIN CourseTutor ct ON t.tutorId = ct.tutorId
-       JOIN Courses c ON ct.courseId = c.courseId
-       WHERE LOWER(c.courseCode) = LOWER($1)`,
-    [formattedCourseCode]
+     FROM Tutors t
+     JOIN CourseTutor ct ON t.tutorID = ct.tutorID
+     JOIN Courses c ON ct.courseID = c.courseID
+     WHERE LOWER(c.courseCode) = LOWER($1);`, 
+    [courseCode]
   )
     .then(tutors => {
       if (tutors.length === 0) {
@@ -39,4 +37,5 @@ router.get('/coursecodes/:courseCode', function (req, res, next) {
       res.status(500).json({ error: err.message });
     });
 });
+
 module.exports = router;
